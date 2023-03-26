@@ -56,6 +56,7 @@ var istioOperatorGVR = apimachinery_schema.GroupVersionResource{
 type StatusVerifier struct {
 	istioNamespace   string
 	manifestsPath    string
+	profile          string
 	filenames        []string
 	controlPlaneOpts clioptions.ControlPlaneOptions
 	logger           clog.Logger
@@ -82,7 +83,7 @@ func WithIOP(iop *v1alpha1.IstioOperator) StatusVerifierOptions {
 // NewStatusVerifier creates a new instance of post-install verifier
 // which checks the status of various resources from the manifest.
 func NewStatusVerifier(istioNamespace, manifestsPath, kubeconfig, context string,
-	filenames []string, controlPlaneOpts clioptions.ControlPlaneOptions,
+	filenames []string, profile string, controlPlaneOpts clioptions.ControlPlaneOptions,
 	options ...StatusVerifierOptions,
 ) (*StatusVerifier, error) {
 	client, err := kube.NewCLIClient(kube.BuildClientCmd(kubeconfig, context), "")
