@@ -47,7 +47,7 @@ func (a *LightstepAnalyzer) Metadata() analysis.Metadata {
 // Analyze implements Analyzer
 func (a *LightstepAnalyzer) Analyze(c analysis.Context) {
 	meshConfig := fetchMeshConfig(c)
-	providerNames := sets.NewString()
+	providerNames := sets.New[string]()
 	for _, prov := range meshConfig.ExtensionProviders {
 		switch prov.Provider.(type) {
 		case *v1alpha1.MeshConfig_ExtensionProvider_Lightstep:
