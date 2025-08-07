@@ -19,6 +19,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"io"
+	"k8s.io/apimachinery/pkg/api/resource"
 	"os"
 	"strings"
 
@@ -173,11 +174,11 @@ type DebugWriter struct {
 
 func (s *DebugWriter) PrintAll(drs map[string]*discovery.DiscoveryResponse) error {
 	// Gather the statuses before printing so they may be sorted
-	mappedResp := map[string]string{}
+	mappedResp := map[string][]byte{}
 	for id, dr := range drs {
 		for _, resource := range dr.Resources {
 			if s.InternalDebugAllIstiod {
-				mappedResp[id] = string(resource.Value) + "\n"
+				mappedResp[id] = resource.Value
 			} else {
 				var out bytes.Buffer
 				if err := json.Indent(&out, resource.Value, "", "  "); err != nil {
@@ -192,12 +193,17 @@ func (s *DebugWriter) PrintAll(drs map[string]*discovery.DiscoveryResponse) erro
 		}
 	}
 	if len(mappedResp) > 0 {
-		mresp, err := json.MarshalIndent(mappedResp, "", "  ")
-		if err != nil {
-			return err
+		rawMap := make(map[string]json.RawMessage)
+		for k, v := range mappedResp {
+			rawMap[k] = json.RawMessage(v)
 		}
-		_, _ = s.Writer.Write(mresp)
-		_, _ = s.Writer.Write([]byte("\n"))
+		mresp, err := json.MarshalIndent(rawMap, "", "  ")
+		if err != nil {
+			_, _ = s.Writer.Write(rawMap)
+		} else {
+			_, _ = s.Writer.Write(mresp)
+			_, _ = s.Writer.Write([]byte("\n"))
+		}
 	}
 
 	return nil
